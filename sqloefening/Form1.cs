@@ -5,6 +5,7 @@ namespace sqloefening
         public Form1()
         {
             InitializeComponent();
+             
         }
     }
 }
