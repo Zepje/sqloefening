@@ -35,7 +35,19 @@ namespace sqloefening
         {
         conn.Open();
 
-         LeerlingKiesMenu.Items.Add("Red");
+            string query = "SELECT;";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            conn.Open();
+
+            using (MySqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    DateTime date = reader.GetDateTime(0);
+                    
+                }
+            }
+            LeerlingKiesMenu.Items.Add("blue");
            
         }
     }
