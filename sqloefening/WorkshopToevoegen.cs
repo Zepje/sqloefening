@@ -12,9 +12,12 @@ namespace sqloefening
 {
     public partial class WorkshopToevoegen : Form
     {
+        string conn = "server=127.0.0.1;port=3307;database=mydb;user=root;password=usbw;";
         public WorkshopToevoegen()
         {
             InitializeComponent();
         }
+
+        
     }
 }
