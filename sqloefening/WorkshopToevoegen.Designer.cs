@@ -35,10 +35,10 @@
             this.docentLabel = new System.Windows.Forms.Label();
             this.lokaalLabel = new System.Windows.Forms.Label();
             this.selectGroupBox = new System.Windows.Forms.GroupBox();
-            this.momentLabel = new System.Windows.Forms.Label();
-            this.momentPicker = new System.Windows.Forms.DateTimePicker();
             this.maxDeelnemersInput = new System.Windows.Forms.NumericUpDown();
             this.maxDeelnemersLabel = new System.Windows.Forms.Label();
+            this.momentLabel = new System.Windows.Forms.Label();
+            this.momentPicker = new System.Windows.Forms.DateTimePicker();
             this.toevoegenButton = new System.Windows.Forms.Button();
             this.annuleerButton = new System.Windows.Forms.Button();
             this.selectGroupBox.SuspendLayout();
@@ -114,22 +114,6 @@
             this.selectGroupBox.TabIndex = 6;
             this.selectGroupBox.TabStop = false;
             // 
-            // momentLabel
-            // 
-            this.momentLabel.AutoSize = true;
-            this.momentLabel.Location = new System.Drawing.Point(6, 217);
-            this.momentLabel.Name = "momentLabel";
-            this.momentLabel.Size = new System.Drawing.Size(65, 20);
-            this.momentLabel.TabIndex = 7;
-            this.momentLabel.Text = "Moment";
-            // 
-            // momentPicker
-            // 
-            this.momentPicker.Location = new System.Drawing.Point(6, 240);
-            this.momentPicker.Name = "momentPicker";
-            this.momentPicker.Size = new System.Drawing.Size(326, 27);
-            this.momentPicker.TabIndex = 7;
-            // 
             // maxDeelnemersInput
             // 
             this.maxDeelnemersInput.Location = new System.Drawing.Point(175, 286);
@@ -145,6 +129,22 @@
             this.maxDeelnemersLabel.Size = new System.Drawing.Size(163, 20);
             this.maxDeelnemersLabel.TabIndex = 8;
             this.maxDeelnemersLabel.Text = "Max aantal deelnemers";
+            // 
+            // momentLabel
+            // 
+            this.momentLabel.AutoSize = true;
+            this.momentLabel.Location = new System.Drawing.Point(6, 217);
+            this.momentLabel.Name = "momentLabel";
+            this.momentLabel.Size = new System.Drawing.Size(65, 20);
+            this.momentLabel.TabIndex = 7;
+            this.momentLabel.Text = "Moment";
+            // 
+            // momentPicker
+            // 
+            this.momentPicker.Location = new System.Drawing.Point(6, 240);
+            this.momentPicker.Name = "momentPicker";
+            this.momentPicker.Size = new System.Drawing.Size(326, 27);
+            this.momentPicker.TabIndex = 7;
             // 
             // toevoegenButton
             // 
@@ -168,7 +168,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(378, 450);
+            this.ClientSize = new System.Drawing.Size(378, 437);
             this.Controls.Add(this.annuleerButton);
             this.Controls.Add(this.toevoegenButton);
             this.Controls.Add(this.selectGroupBox);
