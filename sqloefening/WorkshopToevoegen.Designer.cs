@@ -50,7 +50,7 @@
             this.docentComboBox.FormattingEnabled = true;
             this.docentComboBox.Location = new System.Drawing.Point(6, 40);
             this.docentComboBox.Name = "docentComboBox";
-            this.docentComboBox.Size = new System.Drawing.Size(326, 28);
+            this.docentComboBox.Size = new System.Drawing.Size(670, 28);
             this.docentComboBox.TabIndex = 0;
             // 
             // lokaalComboBox
@@ -58,7 +58,7 @@
             this.lokaalComboBox.FormattingEnabled = true;
             this.lokaalComboBox.Location = new System.Drawing.Point(6, 175);
             this.lokaalComboBox.Name = "lokaalComboBox";
-            this.lokaalComboBox.Size = new System.Drawing.Size(326, 28);
+            this.lokaalComboBox.Size = new System.Drawing.Size(670, 28);
             this.lokaalComboBox.TabIndex = 1;
             // 
             // cursussenComboBox
@@ -66,7 +66,7 @@
             this.cursussenComboBox.FormattingEnabled = true;
             this.cursussenComboBox.Location = new System.Drawing.Point(6, 107);
             this.cursussenComboBox.Name = "cursussenComboBox";
-            this.cursussenComboBox.Size = new System.Drawing.Size(326, 28);
+            this.cursussenComboBox.Size = new System.Drawing.Size(670, 28);
             this.cursussenComboBox.TabIndex = 2;
             // 
             // cursusLabel
@@ -110,7 +110,7 @@
             this.selectGroupBox.Controls.Add(this.cursussenComboBox);
             this.selectGroupBox.Location = new System.Drawing.Point(12, 24);
             this.selectGroupBox.Name = "selectGroupBox";
-            this.selectGroupBox.Size = new System.Drawing.Size(348, 332);
+            this.selectGroupBox.Size = new System.Drawing.Size(692, 332);
             this.selectGroupBox.TabIndex = 6;
             this.selectGroupBox.TabStop = false;
             // 
@@ -154,6 +154,7 @@
             this.toevoegenButton.TabIndex = 7;
             this.toevoegenButton.Text = "Toevoegen";
             this.toevoegenButton.UseVisualStyleBackColor = true;
+            this.toevoegenButton.Click += new System.EventHandler(this.toevoegenButton_Click);
             // 
             // annuleerButton
             // 
@@ -168,7 +169,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(378, 437);
+            this.ClientSize = new System.Drawing.Size(719, 437);
             this.Controls.Add(this.annuleerButton);
             this.Controls.Add(this.toevoegenButton);
             this.Controls.Add(this.selectGroupBox);
