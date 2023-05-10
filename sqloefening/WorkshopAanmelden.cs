@@ -66,6 +66,7 @@ namespace sqloefening
             PlanningDataGrid.Columns.Add("idLokaal", "idLokaal");
             PlanningDataGrid.Columns.Add("GekozenMoment", "GekozenMoment");
             PlanningDataGrid.Columns.Add("maxCapaciteit", "maxCapaciteit");
+            PlanningDataGrid.Columns.Add("id", "id");
 
             PlanningDataGrid.AllowUserToAddRows = false;
             PlanningDataGrid.AllowUserToDeleteRows = false;
@@ -73,36 +74,38 @@ namespace sqloefening
             PlanningDataGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             PlanningDataGrid.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             PlanningDataGrid.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            PlanningDataGrid.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
 
         }
 
         void fulldatagrid()
         {
-            List<string> SearchID = SearchbyID(); 
-            string query = "from planning;";
+            List<List<string>> SearchID = SearchbyID();
+            int i = 0;
+            string query = "select GekozenMoment,maxCapaciteit,idPlanning from planning;";
             MySqlCommand cmd = new MySqlCommand(query, conn);
             conn.Open();
 
             using (MySqlDataReader reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
-                {
-                    string docent = zoekstringSQL(reader.GetInt32(0),"docent",reader);
-                    string cursus = ZoekCursusById(reader.GetInt32(1),reader);
-                    string lokaal = zoekstringSQL(reader.GetInt32(2), "lookaal", reader);
-                    int Max = reader.GetInt32(4);
-                    DateTime moment = reader.GetDateTime(3);
+                { 
 
-                    PlanningDataGrid.Rows.Add(docent,cursus,lokaal,moment,Max);
+                    int Max = reader.GetInt32(1);
+                    DateTime moment = reader.GetDateTime(0);
+                    int id = reader.GetInt32(2);
+
+                    PlanningDataGrid.Rows.Add(SearchID[i][2], SearchID[i][1], SearchID[i][0], moment,Max,id);
+                    i++;
                 }
             }
             conn.Close();
         }
 
-        List<string> SearchbyID()
+        List<List<string>> SearchbyID()
         {
-            List<int> ids = new List<int>();
-            List<string> Idnamefound = new List<string>();
+            List<List<int>> ids = new List<List<int>>();
+            List<List<string>> Idnamefoundlist = new List<List<string>>();
             string query = "SELECT idLokaal,idCursus,idDocent FROM planning";
             MySqlCommand cmd = new MySqlCommand(query, conn);
             conn.Open();
@@ -111,18 +114,28 @@ namespace sqloefening
             {
                 while (reader.Read())
                 {
-                    ids[0] = reader.GetInt32(0);
-                    ids[1] = reader.GetInt32(1);
-                    ids[2] = reader.GetInt32(2);
+                    List<int> id = new List<int>();
+                    int i = reader.GetInt32(0);
+                    id.Add(i);
+                    i = reader.GetInt32(1);
+                    id.Add(i);
+                    i = reader.GetInt32(2);
+                    id.Add(i);
+                    ids.Add(id);
+
                 }
             }
             conn.Close();
-
-            Idnamefound[0] = zoekstringSQL(ids[0], "lokaal");
-            Idnamefound[1] = ZoekCursusById(ids[1]);
-            Idnamefound[2] = zoekstringSQL(ids[2], "docent");
-
-            return Idnamefound;
+            for (int i = 0; i < ids.Count; i++)
+            {
+                ids[i][1] = ids[i][0];
+                List<string> Idnamefound = new List<string>();
+                Idnamefound.Add(zoekstringSQL(ids[i][0], "lokaal"));
+                Idnamefound.Add(ZoekCursusById(ids[i][1]));
+                Idnamefound.Add(zoekstringSQL(ids[i][2], "docent"));
+                Idnamefoundlist.Add(Idnamefound);
+            }
+            return Idnamefoundlist;
 
         }
 
@@ -147,7 +160,7 @@ namespace sqloefening
             {
                 while (reader.Read())
                 {
-
+                    gevonden = $"{reader.GetString(0)} {reader.GetString(1)}";
                 }
             }
 
@@ -170,7 +183,7 @@ namespace sqloefening
             {
                 while (reader.Read())
                 {
-
+                    gevonden = reader.GetString(0);
                 }
             }
             conn.Close();
