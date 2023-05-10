@@ -38,9 +38,10 @@
             this.maxDeelnemersInput = new System.Windows.Forms.NumericUpDown();
             this.maxDeelnemersLabel = new System.Windows.Forms.Label();
             this.momentLabel = new System.Windows.Forms.Label();
-            this.momentPicker = new System.Windows.Forms.DateTimePicker();
+            this.datumPicker = new System.Windows.Forms.DateTimePicker();
             this.toevoegenButton = new System.Windows.Forms.Button();
             this.annuleerButton = new System.Windows.Forms.Button();
+            this.uurPicker = new System.Windows.Forms.DateTimePicker();
             this.selectGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxDeelnemersInput)).BeginInit();
             this.SuspendLayout();
@@ -98,10 +99,11 @@
             // 
             // selectGroupBox
             // 
+            this.selectGroupBox.Controls.Add(this.uurPicker);
             this.selectGroupBox.Controls.Add(this.maxDeelnemersInput);
             this.selectGroupBox.Controls.Add(this.maxDeelnemersLabel);
             this.selectGroupBox.Controls.Add(this.momentLabel);
-            this.selectGroupBox.Controls.Add(this.momentPicker);
+            this.selectGroupBox.Controls.Add(this.datumPicker);
             this.selectGroupBox.Controls.Add(this.cursusLabel);
             this.selectGroupBox.Controls.Add(this.lokaalLabel);
             this.selectGroupBox.Controls.Add(this.docentComboBox);
@@ -139,12 +141,12 @@
             this.momentLabel.TabIndex = 7;
             this.momentLabel.Text = "Moment";
             // 
-            // momentPicker
+            // datumPicker
             // 
-            this.momentPicker.Location = new System.Drawing.Point(6, 240);
-            this.momentPicker.Name = "momentPicker";
-            this.momentPicker.Size = new System.Drawing.Size(326, 27);
-            this.momentPicker.TabIndex = 7;
+            this.datumPicker.Location = new System.Drawing.Point(6, 240);
+            this.datumPicker.Name = "datumPicker";
+            this.datumPicker.Size = new System.Drawing.Size(326, 27);
+            this.datumPicker.TabIndex = 7;
             // 
             // toevoegenButton
             // 
@@ -164,6 +166,13 @@
             this.annuleerButton.TabIndex = 8;
             this.annuleerButton.Text = "Annuleer";
             this.annuleerButton.UseVisualStyleBackColor = true;
+            // 
+            // uurPicker
+            // 
+            this.uurPicker.Location = new System.Drawing.Point(338, 240);
+            this.uurPicker.Name = "uurPicker";
+            this.uurPicker.Size = new System.Drawing.Size(250, 27);
+            this.uurPicker.TabIndex = 9;
             // 
             // WorkshopToevoegen
             // 
@@ -191,11 +200,12 @@
         private Label docentLabel;
         private Label lokaalLabel;
         private GroupBox selectGroupBox;
-        private DateTimePicker momentPicker;
+        private DateTimePicker datumPicker;
         private Label momentLabel;
         private NumericUpDown maxDeelnemersInput;
         private Label maxDeelnemersLabel;
         private Button toevoegenButton;
         private Button annuleerButton;
+        private DateTimePicker uurPicker;
     }
 }
