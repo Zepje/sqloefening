@@ -10,7 +10,7 @@ namespace sqloefening
         {
 
             ApplicationConfiguration.Initialize();
-            Application.Run(new WorkshopAanmelden());
+            Application.Run(new Form1());
         }
     }
 }
