@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -31,14 +32,55 @@ namespace sqloefening
 
         private void button1_Click(object sender, EventArgs e)
         {
+            bool control = controle();
+
+            if (control == true)
+            {
+                string query = "INSERT INTO inschrijvingen (idPlanning, idStudent) VALUES (@idPlanning, @idStudent)";
+
+                conn.Open();
+
+                using (var command = new MySqlCommand(query, conn))
+                {
+                    // Add the parameters to the query
+
+                    command.Parameters.AddWithValue("@idPlanning", zoekiddatagrid(5));
 
 
+
+                    command.Parameters.AddWithValue("@idStudent", IDoutofname(LeerlingKiesMenu.Text));
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    Console.WriteLine(rowsAffected + " row(s) inserted.");
+                }
+
+                conn.Close();
+            }
         }
 
-        void FillComboBox()
+        int zoekiddatagrid(int collumplace)
         {
+            int i = 0;
+            string idvalue = string.Empty;
+            foreach (DataGridViewCell cell in PlanningDataGrid.SelectedCells)
+            {
+                object value = cell.Value;
+                if (i == collumplace)
+                {
+                    idvalue = value.ToString();
+                }
+                i++;
+            }
+            return int.Parse(idvalue);
+        }
 
-            string query = "select Studentnummer,Naam,Voornaam from student;";
+        bool controle()
+        {
+            int idplan = zoekiddatagrid(5);
+            int MAX = zoekiddatagrid(4);
+            int count = 0;
+            string query = $"SELECT COUNT(*) FROM inschrijvingen WHERE idPlanning = '{idplan}';";
             MySqlCommand cmd = new MySqlCommand(query, conn);
             conn.Open();
 
@@ -46,10 +88,46 @@ namespace sqloefening
             {
                 while (reader.Read())
                 {
-                    string ID = reader.GetString(0);
+                    count = reader.GetInt16(0);
+                    Console.WriteLine($"max {count}");
+                }
+
+            }
+            conn.Close();
+
+            if (count < MAX)
+                return true;
+            else
+                return false;
+        }
+        int IDoutofname(string input)
+        {
+            string idNumber = string.Empty;
+            Regex regex = new Regex(@"\((\d+)\)");
+            Match match = regex.Match(input);
+            if (match.Success)
+            {
+                idNumber = match.Groups[1].Value;
+                Console.WriteLine($"The ID number is {idNumber}");
+            }
+
+            return int.Parse(idNumber);
+        }
+        void FillComboBox()
+        {
+
+            string query = "select idStudent,Naam,Voornaam from student;";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            conn.Open();
+
+            using (MySqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int ID = reader.GetInt32(0);
                     string Naam = reader.GetString(1);
                     string Voornaam = reader.GetString(2);
-                    LeerlingKiesMenu.Items.Add($"{Naam} {Voornaam} ({ID})");
+                    LeerlingKiesMenu.Items.Add($"{Naam} {Voornaam} ({ID.ToString()})");
                 }
 
                 LeerlingKiesMenu.SelectedIndex = 0;
