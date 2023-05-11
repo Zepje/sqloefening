@@ -57,6 +57,10 @@ namespace sqloefening
 
                 conn.Close();
             }
+
+            else
+             MessageBox.Show("Sorry, the registrations are full.", "Registration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
         }
 
         int zoekiddatagrid(int collumplace)
