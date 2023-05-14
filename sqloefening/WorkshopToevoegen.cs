@@ -1,295 +1,556 @@
-﻿using System;
+//
+// Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2019-2020 Nobuaki Tanaka
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+
+
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using MySqlConnector;
+using ManagedDoom.Audio;
+using ManagedDoom.Video;
+using ManagedDoom.UserInput;
 
-namespace sqloefening
+namespace ManagedDoom
 {
-    public partial class WorkshopToevoegen : Form
+    public class Doom
     {
-        string conn = "server=127.0.0.1;port=3307;database=mydb;user=root;password=usbw;";
-        public WorkshopToevoegen()
+        private CommandLineArgs args;
+        private Config config;
+        private GameContent content;
+        private IVideo video;
+        private ISound sound;
+        private IMusic music;
+        private IUserInput userInput;
+
+        private List<DoomEvent> events;
+
+        private GameOptions options;
+
+        private DoomMenu menu;
+
+        private OpeningSequence opening;
+
+        private DemoPlayback demoPlayback;
+
+        private TicCmd[] cmds;
+        private DoomGame game;
+
+        private WipeEffect wipeEffect;
+        private bool wiping;
+
+        private DoomState currentState;
+        private DoomState nextState;
+        private bool needWipe;
+
+        private bool sendPause;
+
+        private bool quit;
+        private string quitMessage;
+
+        private bool mouseGrabbed;
+
+        public Doom(CommandLineArgs args, Config config, GameContent content, IVideo video, ISound sound, IMusic music, IUserInput userInput)
         {
-            InitializeComponent();
-            vulDocentDropdown();
-            vulCursusDropdown();
-            vulLokaalDropdown();
-            uurPicker.Format = DateTimePickerFormat.Time;
+            video = video ?? NullVideo.GetInstance();
+            sound = sound ?? NullSound.GetInstance();
+            music = music ?? NullMusic.GetInstance();
+            userInput = userInput ?? NullUserInput.GetInstance();
+
+            this.args = args;
+            this.config = config;
+            this.content = content;
+            this.video = video;
+            this.sound = sound;
+            this.music = music;
+            this.userInput = userInput;
+
+            events = new List<DoomEvent>();
+
+            options = new GameOptions(args, content);
+            options.Video = video;
+            options.Sound = sound;
+            options.Music = music;
+            options.UserInput = userInput;
+
+            menu = new DoomMenu(this);
+
+            opening = new OpeningSequence(content, options);
+
+            cmds = new TicCmd[Player.MaxPlayerCount];
+            for (var i = 0; i < Player.MaxPlayerCount; i++)
+            {
+                cmds[i] = new TicCmd();
+            }
+            game = new DoomGame(content, options);
+
+            wipeEffect = new WipeEffect(video.WipeBandCount, video.WipeHeight);
+            wiping = false;
+
+            currentState = DoomState.None;
+            nextState = DoomState.Opening;
+            needWipe = false;
+
+            sendPause = false;
+
+            quit = false;
+            quitMessage = null;
+
+            mouseGrabbed = false;
+
+            CheckGameArgs();
         }
 
-        private void toevoegenButton_Click(object sender, EventArgs e)
+        private void CheckGameArgs()
         {
-            if(docentComboBox.SelectedIndex == -1 || lokaalComboBox.SelectedIndex == -1 || cursussenComboBox.SelectedIndex == -1)
+            if (args.warp.Present)
             {
-                MessageBox.Show("Niet alle velden zijn correct ingevuld!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                nextState = DoomState.Game;
+                options.Episode = args.warp.Value.Item1;
+                options.Map = args.warp.Value.Item2;
+                game.DeferedInitNew();
+            }
+            else if (args.episode.Present)
+            {
+                nextState = DoomState.Game;
+                options.Episode = args.episode.Value;
+                options.Map = 1;
+                game.DeferedInitNew();
             }
 
-            if (maxDeelnemersInput.Value < 1)
+            if (args.skill.Present)
             {
-                MessageBox.Show("Er moet minstens 1 deelnemer toegelaten zijn.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                options.Skill = (GameSkill)(args.skill.Value - 1);
             }
 
-            string docent = docentComboBox.Text;
-            string cursus = cursussenComboBox.Text;
-            string lokaal = lokaalComboBox.Text;
+            if (args.deathmatch.Present)
+            {
+                options.Deathmatch = 1;
+            }
 
-            int idDocent = verkrijgIdentificatieDocent(docent);
-            int idCursus = verkrijgIdentificatieCursus(cursus);
-            int idLokaal = verkrijgIdentificatieLokaal(lokaal);
+            if (args.altdeath.Present)
+            {
+                options.Deathmatch = 2;
+            }
 
-            DateTime moment = verkrijgGekozenMoment();
-            int maxCapaciteit = (int)maxDeelnemersInput.Value;
+            if (args.fast.Present)
+            {
+                options.FastMonsters = true;
+            }
 
-            vulDatabase(idDocent, idCursus, idLokaal, moment, maxCapaciteit);
+            if (args.respawn.Present)
+            {
+                options.RespawnMonsters = true;
+            }
 
+            if (args.nomonsters.Present)
+            {
+                options.NoMonsters = true;
+            }
+
+            if (args.loadgame.Present)
+            {
+                nextState = DoomState.Game;
+                game.LoadGame(args.loadgame.Value);
+            }
+
+            if (args.playdemo.Present)
+            {
+                nextState = DoomState.DemoPlayback;
+                demoPlayback = new DemoPlayback(args, content, options, args.playdemo.Value);
+            }
+
+            if (args.timedemo.Present)
+            {
+                nextState = DoomState.DemoPlayback;
+                demoPlayback = new DemoPlayback(args, content, options, args.timedemo.Value);
+            }
         }
 
-        private void vulDatabase(int idDocent, int idCursus, int idLokaal, DateTime moment, int maxCapaciteit)
+        public void NewGame(GameSkill skill, int episode, int map)
         {
-            string query = "INSERT INTO planning (idDocent, idCursus, idLokaal, GekozenMoment, maxCapaciteit) VALUES (@idDocent, @idCursus, @idLokaal, @GekozenMoment, @maxCapaciteit)";
+            game.DeferedInitNew(skill, episode, map);
+            nextState = DoomState.Game;
+        }
 
-            using (var connection = new MySqlConnection(conn))
+        public void EndGame()
+        {
+            nextState = DoomState.Opening;
+        }
+
+        private void DoEvents()
+        {
+            if (wiping)
             {
-                connection.Open();
+                return;
+            }
 
-                using (var command = new MySqlCommand(query, connection))
+            foreach (var e in events)
+            {
+                if (menu.DoEvent(e))
                 {
-                    // Add the parameters to the query
-                    command.Parameters.AddWithValue("@idDocent", idDocent);
-                    command.Parameters.AddWithValue("@idCursus", idCursus);
-                    command.Parameters.AddWithValue("@idLokaal", idLokaal);
-                    command.Parameters.AddWithValue("@GekozenMoment", moment);
-                    command.Parameters.AddWithValue("@maxCapaciteit", maxCapaciteit);
-
-                    int rowsAffected = command.ExecuteNonQuery();
-
-                    Console.WriteLine(rowsAffected + " row(s) inserted.");
+                    continue;
                 }
-            }
-        }
 
-        private DateTime verkrijgGekozenMoment()
-        {
-            DateTime selectedDate = datumPicker.Value.Date;
-            TimeSpan selectedTime = uurPicker.Value.TimeOfDay;
-
-            DateTime combinedDateTime = new DateTime(selectedDate.Year, selectedDate.Month, selectedDate.Day,
-                selectedTime.Hours, selectedTime.Minutes, selectedTime.Seconds);
-
-            return combinedDateTime;
-        }
-
-        private int verkrijgIdentificatieDocent(string docent)
-        {
-            string pattern = @"\[([a-zA-Z0-9]+)\]";
-
-            Regex regex = new Regex(pattern);
-
-            Match match = regex.Match(docent);
-
-            if (match.Success)
-            {
-                string docentnummer = match.Groups[1].Value;
-
-                string query = "SELECT idDocent FROM docent WHERE Docentnummer = @Docentnummer";
-
-                using (var connection = new MySqlConnection(conn))
+                if (e.Type == EventType.KeyDown)
                 {
-                    connection.Open();
-
-                    using (var command = new MySqlCommand(query, connection))
+                    if (CheckFunctionKey(e.Key))
                     {
-                        // Add the parameter to the query
-                        command.Parameters.AddWithValue("@Docentnummer", docentnummer);
-
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                int idDocent = reader.GetInt32("idDocent");
-                                
-                                Console.WriteLine("idDocent: " + idDocent);
-
-                                return idDocent;
-                            }
-                            else
-                            {
-                                Console.WriteLine("No matching docent found.");
-                                return 0;
-                            }
-                        }
+                        continue;
                     }
                 }
 
-
-            }
-            else
-            {
-                Console.WriteLine("No ID found in the input string.");
-                return 0;
-            }
-
-
-            
-        }
-
-        private int verkrijgIdentificatieCursus(string cursus)
-        {
-            string pattern = @"\[([a-zA-Z0-9]+)\]";
-
-            Regex regex = new Regex(pattern);
-
-            Match match = regex.Match(cursus);
-
-            if (match.Success)
-            {
-                string cursusnummer = match.Groups[1].Value;
-
-                string query = "SELECT idCursus FROM cursussen WHERE identificatieNummer = @identificatieNummer";
-
-                using (var connection = new MySqlConnection(conn))
+                if (currentState == DoomState.Game)
                 {
-                    connection.Open();
-
-                    using (var command = new MySqlCommand(query, connection))
+                    if (e.Key == DoomKey.Pause && e.Type == EventType.KeyDown)
                     {
-                        // Add the parameter to the query
-                        command.Parameters.AddWithValue("@identificatieNummer", cursusnummer);
+                        sendPause = true;
+                        continue;
+                    }
 
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                int idCursus = reader.GetInt32("idCursus");
-
-                                Console.WriteLine("idCursus: " + idCursus);
-
-                                return idCursus;
-                            }
-                            else
-                            {
-                                Console.WriteLine("No matching cursus found.");
-                                return 0;
-                            }
-                        }
+                    if (game.DoEvent(e))
+                    {
+                        continue;
                     }
                 }
-
-
-            }
-            else
-            {
-                Console.WriteLine("No ID found in the input string.");
-                return 0;
+                else if (currentState == DoomState.DemoPlayback)
+                {
+                    demoPlayback.DoEvent(e);
+                }
             }
 
-
-
+            events.Clear();
         }
 
-        private int verkrijgIdentificatieLokaal(string lokaal)
+        private bool CheckFunctionKey(DoomKey key)
         {
-            string query = "SELECT idLokaal FROM lokaal WHERE Lokaalnummer = @Lokaalnummer";
-
-            using (var connection = new MySqlConnection(conn))
+            switch (key)
             {
-                connection.Open();
+                case DoomKey.F1:
+                    menu.ShowHelpScreen();
+                    return true;
 
-                using (var command = new MySqlCommand(query, connection))
-                {
-                    // Add the parameter to the query
-                    command.Parameters.AddWithValue("@Lokaalnummer", lokaal);
+                case DoomKey.F2:
+                    menu.ShowSaveScreen();
+                    return true;
 
-                    using (var reader = command.ExecuteReader())
+                case DoomKey.F3:
+                    menu.ShowLoadScreen();
+                    return true;
+
+                case DoomKey.F4:
+                    menu.ShowVolumeControl();
+                    return true;
+
+                case DoomKey.F6:
+                    menu.QuickSave();
+                    return true;
+
+                case DoomKey.F7:
+                    if (currentState == DoomState.Game)
                     {
-                        if (reader.Read())
+                        menu.EndGame();
+                    }
+                    else
+                    {
+                        options.Sound.StartSound(Sfx.OOF);
+                    }
+                    return true;
+
+                case DoomKey.F8:
+                    video.DisplayMessage = !video.DisplayMessage;
+                    if (currentState == DoomState.Game && game.State == GameState.Level)
+                    {
+                        string msg;
+                        if (video.DisplayMessage)
                         {
-                            int idLokaal = reader.GetInt32("idLokaal");
-
-                            Console.WriteLine("idLokaal: " + idLokaal);
-
-                            return idLokaal;
+                            msg = DoomInfo.Strings.MSGON;
                         }
                         else
                         {
-                            Console.WriteLine("No matching lokaal found.");
-                            return 0;
+                            msg = DoomInfo.Strings.MSGOFF;
                         }
+                        game.World.ConsolePlayer.SendMessage(msg);
                     }
-                }
-            }
-        }
+                    menu.StartSound(Sfx.SWTCHN);
+                    return true;
 
-        private void vulDocentDropdown()
-        {
-            using var connection = new MySqlConnection(conn);
-            connection.Open();
-            MySqlCommand command = new MySqlCommand("SELECT Titel, Naam, Voornaam, Docentnummer FROM docent;", connection);
-            using (var reader = command.ExecuteReader()){
-                while (reader.Read())
-                {
-                    string titel;
-                    try
+                case DoomKey.F9:
+                    menu.QuickLoad();
+                    return true;
+
+                case DoomKey.F10:
+                    menu.Quit();
+                    return true;
+
+                case DoomKey.F11:
+                    var gcl = video.GammaCorrectionLevel;
+                    gcl++;
+                    if (gcl > video.MaxGammaCorrectionLevel)
                     {
-                        titel = reader.GetString(0) + " ";
+                        gcl = 0;
                     }
-                    catch
+                    video.GammaCorrectionLevel = gcl;
+                    if (currentState == DoomState.Game && game.State == GameState.Level)
                     {
-                        titel = "";
+                        string msg;
+                        if (gcl == 0)
+                        {
+                            msg = DoomInfo.Strings.GAMMALVL0;
+                        }
+                        else
+                        {
+                            msg = "Gamma correction level " + gcl;
+                        }
+                        game.World.ConsolePlayer.SendMessage(msg);
                     }
-                    
-                    string naam = reader.GetString(1);
-                    string voornaam = reader.GetString(2);
-                    string docentnummer = reader.GetString(3);
-                    docentComboBox.Items.Add($"{titel}{naam} {voornaam} [{docentnummer}]");
-                }
+                    return true;
 
-                connection.Close();
+                case DoomKey.Add:
+                case DoomKey.Quote:
+                case DoomKey.Equal:
+                    if (currentState == DoomState.Game &&
+                        game.State == GameState.Level &&
+                        game.World.AutoMap.Visible)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        video.WindowSize = Math.Min(video.WindowSize + 1, video.MaxWindowSize);
+                        sound.StartSound(Sfx.STNMOV);
+                        return true;
+                    }
+
+                case DoomKey.Subtract:
+                case DoomKey.Hyphen:
+                case DoomKey.Semicolon:
+                    if (currentState == DoomState.Game &&
+                        game.State == GameState.Level &&
+                        game.World.AutoMap.Visible)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        video.WindowSize = Math.Max(video.WindowSize - 1, 0);
+                        sound.StartSound(Sfx.STNMOV);
+                        return true;
+                    }
+
+                default:
+                    return false;
             }
-            
         }
 
-        private void vulCursusDropdown()
+        public UpdateResult Update()
         {
-            using var connection = new MySqlConnection(conn);
-            connection.Open();
-            MySqlCommand command = new MySqlCommand("SELECT Naam, identificatieNummer FROM cursussen;", connection);
-            using (var reader = command.ExecuteReader())
+            DoEvents();
+
+            if (!wiping)
             {
-                while (reader.Read())
+                menu.Update();
+
+                if (nextState != currentState)
                 {
-                    string naam = reader.GetString(0);
-                    string id = reader.GetString(1);
-                    cursussenComboBox.Items.Add($"{naam} [{id}]");
+                    if (nextState != DoomState.Opening)
+                    {
+                        opening.Reset();
+                    }
+
+                    if (nextState != DoomState.DemoPlayback)
+                    {
+                        demoPlayback = null;
+                    }
+
+                    currentState = nextState;
                 }
 
-                connection.Close();
+                if (quit)
+                {
+                    return UpdateResult.Completed;
+                }
+
+                if (needWipe)
+                {
+                    needWipe = false;
+                    StartWipe();
+                }
             }
+
+            if (!wiping)
+            {
+                switch (currentState)
+                {
+                    case DoomState.Opening:
+                        if (opening.Update() == UpdateResult.NeedWipe)
+                        {
+                            StartWipe();
+                        }
+                        break;
+
+                    case DoomState.DemoPlayback:
+                        var result = demoPlayback.Update();
+                        if (result == UpdateResult.NeedWipe)
+                        {
+                            StartWipe();
+                        }
+                        else if (result == UpdateResult.Completed)
+                        {
+                            Quit("FPS: " + demoPlayback.Fps.ToString("0.0"));
+                        }
+                        break;
+
+                    case DoomState.Game:
+                        userInput.BuildTicCmd(cmds[options.ConsolePlayer]);
+                        if (sendPause)
+                        {
+                            sendPause = false;
+                            cmds[options.ConsolePlayer].Buttons |= (byte)(TicCmdButtons.Special | TicCmdButtons.Pause);
+                        }
+                        if (game.Update(cmds) == UpdateResult.NeedWipe)
+                        {
+                            StartWipe();
+                        }
+                        break;
+
+                    default:
+                        throw new Exception("Invalid application state!");
+                }
+            }
+
+            if (wiping)
+            {
+                if (wipeEffect.Update() == UpdateResult.Completed)
+                {
+                    wiping = false;
+                }
+            }
+
+            sound.Update();
+
+            CheckMouseState();
+
+            return UpdateResult.None;
         }
 
-        private void vulLokaalDropdown()
+        private void CheckMouseState()
         {
-            using var connection = new MySqlConnection(conn);
-            connection.Open();
-            MySqlCommand command = new MySqlCommand("SELECT Lokaalnummer FROM lokaal;", connection);
-            using (var reader = command.ExecuteReader())
+            bool mouseShouldBeGrabbed;
+            if (!video.HasFocus())
             {
-                while (reader.Read())
-                {
-                    string lokaal = reader.GetString(0);
-                    lokaalComboBox.Items.Add(lokaal);
-                }
+                mouseShouldBeGrabbed = false;
+            }
+            else if (config.video_fullscreen)
+            {
+                mouseShouldBeGrabbed = true;
+            }
+            else
+            {
+                mouseShouldBeGrabbed = currentState == DoomState.Game && !menu.Active;
+            }
 
-                connection.Close();
+            if (mouseGrabbed)
+            {
+                if (!mouseShouldBeGrabbed)
+                {
+                    userInput.ReleaseMouse();
+                    mouseGrabbed = false;
+                }
+            }
+            else
+            {
+                if (mouseShouldBeGrabbed)
+                {
+                    userInput.GrabMouse();
+                    mouseGrabbed = true;
+                }
             }
         }
+
+        private void StartWipe()
+        {
+            wipeEffect.Start();
+            video.InitializeWipe();
+            wiping = true;
+        }
+
+        public void PauseGame()
+        {
+            if (currentState == DoomState.Game &&
+                game.State == GameState.Level &&
+                !game.Paused && !sendPause)
+            {
+                sendPause = true;
+            }
+        }
+
+        public void ResumeGame()
+        {
+            if (currentState == DoomState.Game &&
+                game.State == GameState.Level &&
+                game.Paused && !sendPause)
+            {
+                sendPause = true;
+            }
+        }
+
+        public bool SaveGame(int slotNumber, string description)
+        {
+            if (currentState == DoomState.Game && game.State == GameState.Level)
+            {
+                game.SaveGame(slotNumber, description);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void LoadGame(int slotNumber)
+        {
+            game.LoadGame(slotNumber);
+            nextState = DoomState.Game;
+        }
+
+        public void Quit()
+        {
+            quit = true;
+        }
+
+        public void Quit(string message)
+        {
+            quit = true;
+            quitMessage = message;
+        }
+
+        public void PostEvent(DoomEvent e)
+        {
+            if (events.Count < 64)
+            {
+                events.Add(e);
+            }
+        }
+
+        public DoomState State => currentState;
+        public OpeningSequence Opening => opening;
+        public DemoPlayback DemoPlayback => demoPlayback;
+        public GameOptions Options => options;
+        public DoomGame Game => game;
+        public DoomMenu Menu => menu;
+        public WipeEffect WipeEffect => wipeEffect;
+        public bool Wiping => wiping;
+        public string QuitMessage => quitMessage;
     }
 }
