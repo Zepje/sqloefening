@@ -35,12 +35,13 @@
             this.docentLabel = new System.Windows.Forms.Label();
             this.lokaalLabel = new System.Windows.Forms.Label();
             this.selectGroupBox = new System.Windows.Forms.GroupBox();
-            this.momentLabel = new System.Windows.Forms.Label();
-            this.momentPicker = new System.Windows.Forms.DateTimePicker();
             this.maxDeelnemersInput = new System.Windows.Forms.NumericUpDown();
             this.maxDeelnemersLabel = new System.Windows.Forms.Label();
+            this.momentLabel = new System.Windows.Forms.Label();
+            this.datumPicker = new System.Windows.Forms.DateTimePicker();
             this.toevoegenButton = new System.Windows.Forms.Button();
             this.annuleerButton = new System.Windows.Forms.Button();
+            this.uurPicker = new System.Windows.Forms.DateTimePicker();
             this.selectGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxDeelnemersInput)).BeginInit();
             this.SuspendLayout();
@@ -50,7 +51,7 @@
             this.docentComboBox.FormattingEnabled = true;
             this.docentComboBox.Location = new System.Drawing.Point(6, 40);
             this.docentComboBox.Name = "docentComboBox";
-            this.docentComboBox.Size = new System.Drawing.Size(326, 28);
+            this.docentComboBox.Size = new System.Drawing.Size(670, 28);
             this.docentComboBox.TabIndex = 0;
             // 
             // lokaalComboBox
@@ -58,7 +59,7 @@
             this.lokaalComboBox.FormattingEnabled = true;
             this.lokaalComboBox.Location = new System.Drawing.Point(6, 175);
             this.lokaalComboBox.Name = "lokaalComboBox";
-            this.lokaalComboBox.Size = new System.Drawing.Size(326, 28);
+            this.lokaalComboBox.Size = new System.Drawing.Size(670, 28);
             this.lokaalComboBox.TabIndex = 1;
             // 
             // cursussenComboBox
@@ -66,7 +67,7 @@
             this.cursussenComboBox.FormattingEnabled = true;
             this.cursussenComboBox.Location = new System.Drawing.Point(6, 107);
             this.cursussenComboBox.Name = "cursussenComboBox";
-            this.cursussenComboBox.Size = new System.Drawing.Size(326, 28);
+            this.cursussenComboBox.Size = new System.Drawing.Size(670, 28);
             this.cursussenComboBox.TabIndex = 2;
             // 
             // cursusLabel
@@ -98,10 +99,11 @@
             // 
             // selectGroupBox
             // 
+            this.selectGroupBox.Controls.Add(this.uurPicker);
             this.selectGroupBox.Controls.Add(this.maxDeelnemersInput);
             this.selectGroupBox.Controls.Add(this.maxDeelnemersLabel);
             this.selectGroupBox.Controls.Add(this.momentLabel);
-            this.selectGroupBox.Controls.Add(this.momentPicker);
+            this.selectGroupBox.Controls.Add(this.datumPicker);
             this.selectGroupBox.Controls.Add(this.cursusLabel);
             this.selectGroupBox.Controls.Add(this.lokaalLabel);
             this.selectGroupBox.Controls.Add(this.docentComboBox);
@@ -110,25 +112,9 @@
             this.selectGroupBox.Controls.Add(this.cursussenComboBox);
             this.selectGroupBox.Location = new System.Drawing.Point(12, 24);
             this.selectGroupBox.Name = "selectGroupBox";
-            this.selectGroupBox.Size = new System.Drawing.Size(348, 332);
+            this.selectGroupBox.Size = new System.Drawing.Size(692, 332);
             this.selectGroupBox.TabIndex = 6;
             this.selectGroupBox.TabStop = false;
-            // 
-            // momentLabel
-            // 
-            this.momentLabel.AutoSize = true;
-            this.momentLabel.Location = new System.Drawing.Point(6, 217);
-            this.momentLabel.Name = "momentLabel";
-            this.momentLabel.Size = new System.Drawing.Size(65, 20);
-            this.momentLabel.TabIndex = 7;
-            this.momentLabel.Text = "Moment";
-            // 
-            // momentPicker
-            // 
-            this.momentPicker.Location = new System.Drawing.Point(6, 240);
-            this.momentPicker.Name = "momentPicker";
-            this.momentPicker.Size = new System.Drawing.Size(326, 27);
-            this.momentPicker.TabIndex = 7;
             // 
             // maxDeelnemersInput
             // 
@@ -146,6 +132,22 @@
             this.maxDeelnemersLabel.TabIndex = 8;
             this.maxDeelnemersLabel.Text = "Max aantal deelnemers";
             // 
+            // momentLabel
+            // 
+            this.momentLabel.AutoSize = true;
+            this.momentLabel.Location = new System.Drawing.Point(6, 217);
+            this.momentLabel.Name = "momentLabel";
+            this.momentLabel.Size = new System.Drawing.Size(65, 20);
+            this.momentLabel.TabIndex = 7;
+            this.momentLabel.Text = "Moment";
+            // 
+            // datumPicker
+            // 
+            this.datumPicker.Location = new System.Drawing.Point(6, 240);
+            this.datumPicker.Name = "datumPicker";
+            this.datumPicker.Size = new System.Drawing.Size(326, 27);
+            this.datumPicker.TabIndex = 7;
+            // 
             // toevoegenButton
             // 
             this.toevoegenButton.Location = new System.Drawing.Point(189, 362);
@@ -154,6 +156,7 @@
             this.toevoegenButton.TabIndex = 7;
             this.toevoegenButton.Text = "Toevoegen";
             this.toevoegenButton.UseVisualStyleBackColor = true;
+            this.toevoegenButton.Click += new System.EventHandler(this.toevoegenButton_Click);
             // 
             // annuleerButton
             // 
@@ -164,11 +167,18 @@
             this.annuleerButton.Text = "Annuleer";
             this.annuleerButton.UseVisualStyleBackColor = true;
             // 
+            // uurPicker
+            // 
+            this.uurPicker.Location = new System.Drawing.Point(338, 240);
+            this.uurPicker.Name = "uurPicker";
+            this.uurPicker.Size = new System.Drawing.Size(250, 27);
+            this.uurPicker.TabIndex = 9;
+            // 
             // WorkshopToevoegen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(378, 450);
+            this.ClientSize = new System.Drawing.Size(719, 437);
             this.Controls.Add(this.annuleerButton);
             this.Controls.Add(this.toevoegenButton);
             this.Controls.Add(this.selectGroupBox);
@@ -190,11 +200,12 @@
         private Label docentLabel;
         private Label lokaalLabel;
         private GroupBox selectGroupBox;
-        private DateTimePicker momentPicker;
+        private DateTimePicker datumPicker;
         private Label momentLabel;
         private NumericUpDown maxDeelnemersInput;
         private Label maxDeelnemersLabel;
         private Button toevoegenButton;
         private Button annuleerButton;
+        private DateTimePicker uurPicker;
     }
 }
