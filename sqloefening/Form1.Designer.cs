@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+
             this.inschrijvingenDataGridView = new System.Windows.Forms.DataGridView();
             this.workshopToevoegenButton = new System.Windows.Forms.Button();
             this.workshopAanmeldenButton = new System.Windows.Forms.Button();
@@ -64,17 +65,20 @@
             this.workshopAanmeldenButton.UseVisualStyleBackColor = true;
             this.workshopAanmeldenButton.Click += new System.EventHandler(this.workshopAanmeldenButton_Click);
             // 
+
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+
             this.Controls.Add(this.workshopAanmeldenButton);
             this.Controls.Add(this.workshopToevoegenButton);
             this.Controls.Add(this.inschrijvingenDataGridView);
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.inschrijvingenDataGridView)).EndInit();
+
             this.ResumeLayout(false);
 
         }
