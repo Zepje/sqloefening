@@ -37,26 +37,26 @@
             // LeerlingKiesMenu
             // 
             this.LeerlingKiesMenu.FormattingEnabled = true;
-            this.LeerlingKiesMenu.Location = new System.Drawing.Point(12, 24);
+            this.LeerlingKiesMenu.Location = new System.Drawing.Point(321, 353);
             this.LeerlingKiesMenu.Name = "LeerlingKiesMenu";
-            this.LeerlingKiesMenu.Size = new System.Drawing.Size(376, 28);
+            this.LeerlingKiesMenu.Size = new System.Drawing.Size(672, 28);
             this.LeerlingKiesMenu.TabIndex = 0;
             // 
             // PlanningDataGrid
             // 
             this.PlanningDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.PlanningDataGrid.Location = new System.Drawing.Point(422, 24);
+            this.PlanningDataGrid.Location = new System.Drawing.Point(12, 24);
             this.PlanningDataGrid.Name = "PlanningDataGrid";
             this.PlanningDataGrid.RowHeadersWidth = 51;
             this.PlanningDataGrid.RowTemplate.Height = 29;
-            this.PlanningDataGrid.Size = new System.Drawing.Size(353, 308);
+            this.PlanningDataGrid.Size = new System.Drawing.Size(1329, 308);
             this.PlanningDataGrid.TabIndex = 1;
             // 
             // InschrijvenButton
             // 
-            this.InschrijvenButton.Location = new System.Drawing.Point(333, 409);
+            this.InschrijvenButton.Location = new System.Drawing.Point(564, 437);
             this.InschrijvenButton.Name = "InschrijvenButton";
-            this.InschrijvenButton.Size = new System.Drawing.Size(94, 29);
+            this.InschrijvenButton.Size = new System.Drawing.Size(201, 77);
             this.InschrijvenButton.TabIndex = 2;
             this.InschrijvenButton.Text = "Inschrijven";
             this.InschrijvenButton.UseVisualStyleBackColor = true;
@@ -66,7 +66,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1353, 723);
             this.Controls.Add(this.InschrijvenButton);
             this.Controls.Add(this.PlanningDataGrid);
             this.Controls.Add(this.LeerlingKiesMenu);
